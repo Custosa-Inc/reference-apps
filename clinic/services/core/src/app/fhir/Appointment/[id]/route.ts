@@ -23,8 +23,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const ctx = fhirContext();
-  return writeResponse(async () => {
-    const body = await request.json().catch(() => null);
+  return writeResponse(request, async (body) => {
     const change = await appointmentRequest(ctx, body, { timeZone: clinic.timeZone, id });
     const appointment = await updateAppointment(ctx, id, change, clinic.timeZone);
     // FHIR's answer when an update names a resource that doesn't exist and clients can't pick IDs.

@@ -112,7 +112,8 @@ curl -X POST http://localhost:3000/fhir/Appointment -H "content-type: applicatio
 To cancel or move an appointment, read it, change it and `PUT` it back. To cancel, set `status` to
 `cancelled`. To move, change `start` and `end`, and the Practitioner participant for someone else,
 or remove all three and send a `slot`. Fields the clinic doesn't store, such as `comment`, get a 400
-rather than being dropped. Every booking and change goes in the audit log.
+rather than being dropped. A body that isn't sent as `application/fhir+json` or `application/json`
+gets a 415. Every booking and change goes in the audit log.
 
 ## Mock payer
 

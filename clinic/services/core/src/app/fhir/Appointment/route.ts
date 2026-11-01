@@ -46,8 +46,7 @@ export async function GET(request: Request) {
 // Practitioner. See appointmentRequest in src/fhir for what it reads.
 export async function POST(request: Request) {
   const ctx = fhirContext();
-  return writeResponse(async () => {
-    const body = await request.json().catch(() => null);
+  return writeResponse(request, async (body) => {
     const booking = await appointmentRequest(ctx, body, { timeZone: clinic.timeZone });
     const appointment = await bookAppointment(ctx, booking, clinic.timeZone);
     const response = fhirResponse(toFhirAppointment(appointment), 201);
