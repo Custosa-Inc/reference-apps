@@ -1,0 +1,54 @@
+# Starts the clinic: docker compose up --build
+# To add or replace a service on your computer, use compose.override.yaml (see the README).
+# Ports listen on this computer only (127.0.0.1), since nothing here has sign-in yet.
+name: clinic
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      # Local development only. All data is synthetic.
+      POSTGRES_USER: clinic
+      POSTGRES_PASSWORD: clinic
+      POSTGRES_DB: core
+    volumes:
+      - db-data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clinic -d core"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  core:
+    build: ./services/core
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://clinic:clinic@db:5432/core
+      CLINIC_TIMEZONE: America/Chicago
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/fhir/metadata > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  payer:
+    build: ./services/payer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  db-data:

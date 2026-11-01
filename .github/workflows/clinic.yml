@@ -1,0 +1,56 @@
+name: clinic
+
+on:
+  pull_request:
+    paths:
+      - "clinic/**"
+      - ".github/workflows/clinic.yml"
+  push:
+    branches: [main]
+    paths:
+      - "clinic/**"
+      - ".github/workflows/clinic.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [core, payer]
+    defaults:
+      run:
+        working-directory: clinic/services/${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: clinic/services/${{ matrix.service }}/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+
+  compose:
+    name: run the whole app
+    runs-on: ubuntu-latest
+    needs: check
+    defaults:
+      run:
+        working-directory: clinic
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker compose up --build --detach --wait
+      # The health checks cover /fhir/metadata and the payer. These also need the seeded database.
+      - name: Check the app answers
+        run: |
+          curl --fail --silent http://localhost:3000/ > /dev/null
+          curl --fail --silent "http://localhost:3000/fhir/Patient?name=a" | grep -q '"resource"'
+      - if: failure()
+        run: docker compose logs
