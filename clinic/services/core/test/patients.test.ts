@@ -1,7 +1,9 @@
+import { sql } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
 import { listAuditEvents } from "@/audit";
 import type { Context } from "@/context";
 import { createPatient, getPatient, searchPatients } from "@/patients";
+import { patients } from "@/patients/tables";
 import { createTestContext } from "./db";
 
 let ctx: Context;
@@ -48,5 +50,20 @@ describe("patients", () => {
 
   it("returns null for a patient that doesn't exist", async () => {
     expect(await getPatient(ctx, "00000000-0000-4000-8000-000000000000")).toBeNull();
+  });
+
+  it("saves nothing when the audit event can't be saved", async () => {
+    const broken = await createTestContext();
+    await broken.db.execute(sql`DROP TABLE audit_events`);
+
+    await expect(
+      createPatient(broken, {
+        givenName: "Jane",
+        familyName: "Doe",
+        birthDate: "1980-01-01",
+        gender: "female",
+      }),
+    ).rejects.toThrow();
+    expect(await broken.db.select().from(patients)).toEqual([]);
   });
 });

@@ -65,7 +65,8 @@ npm test
 
 ## FHIR API
 
-Read-only for now, FHIR R4, JSON only.
+Read-only for now, FHIR R4, JSON only. Booking, cancelling and rescheduling through the API come
+next.
 
 | Request | Returns |
 | --- | --- |
@@ -120,7 +121,9 @@ services:
 ## Not built yet
 
 - Sign-in. Every screen acts as one demo user, and the FHIR API is open.
-- Cancelling, rescheduling and checking in appointments
+- Booking, cancelling and rescheduling through the FHIR API, and finding patients by birth date,
+  phone or record number
+- Cancelling, rescheduling and checking in appointments on the screens
 - New-patient intake
 - Calling the payer from the front desk to check eligibility
 - Fax, phone, lab and pharmacy services

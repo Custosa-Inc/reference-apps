@@ -10,9 +10,9 @@ Thanks for helping. You can:
 
 ## Picking an issue
 
-We don't assign issues. When you're ready, open a pull request that links the issue. Opening a draft
-pull request early lets others see you're working on it. If more than one pull request solves the
-same issue, we merge the first one that passes review and meets the issue's "done when" list.
+We don't assign issues. To claim one, open a draft pull request that links it. That holds the issue
+for a week, and each new commit extends the hold by a week. If nobody holds an issue, we merge the
+first pull request that passes review and meets the issue's "done when" list.
 
 Issues labelled `good first issue` are small and self-contained.
 
@@ -87,4 +87,4 @@ industry is held to, like the clinic's HIPAA.md. Open an issue to discuss a new 
 
 ## Reporting a security problem
 
-Please don't open a public issue. Use "Report a vulnerability" on the repo's Security tab.
+See [SECURITY.md](SECURITY.md).

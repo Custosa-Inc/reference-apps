@@ -47,9 +47,9 @@ Turning on a formatter later would reformat every file and clash with every open
 The app uses a fixed demo user, and the FHIR API is open. Both are fine for synthetic data and are
 listed as open work.
 
-## 9. Built around HIPAA, neutral to vendors (2026-11-01)
+## 9. Built around HIPAA (2026-11-01)
 
-HIPAA is the first question asked of any product that touches health data, so the clinic tracks
-HIPAA's technical safeguards in [HIPAA.md](HIPAA.md) and builds toward them in the open, listing what's
-missing as plainly as what's done. The app doesn't depend on or favor any vendor's product, compliance
-tools included. They connect through the plug-in point like any other service.
+Buyers of health software ask vendors how they protect health data under HIPAA, and developers rarely
+get to see HIPAA's safeguards in working code. So the clinic tracks those safeguards in
+[HIPAA.md](HIPAA.md) and builds toward them in the open. Outside products, compliance tools included,
+connect through the plug-in point rather than being built into the app.
