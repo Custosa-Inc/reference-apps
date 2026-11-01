@@ -1,5 +1,6 @@
 import { clinic } from "@/config";
 import {
+  appointmentRequest,
   badRequest,
   baseUrlOf,
   countParam,
@@ -7,8 +8,9 @@ import {
   rejectUnsupported,
   searchBundle,
   toFhirAppointment,
+  writeResponse,
 } from "@/fhir";
-import { listAppointments } from "@/schedule";
+import { bookAppointment, listAppointments } from "@/schedule";
 import { fhirContext } from "@/session";
 import { isIsoDate } from "@/time";
 import { z } from "zod";
@@ -38,4 +40,18 @@ export async function GET(request: Request) {
     limit,
   });
   return fhirResponse(searchBundle(baseUrlOf(request), appointments.map(toFhirAppointment), limit));
+}
+
+// POST /fhir/Appointment books an appointment from a slot, or from a start, an end and a
+// Practitioner. See appointmentRequest in src/fhir for what it reads.
+export async function POST(request: Request) {
+  const ctx = fhirContext();
+  return writeResponse(async () => {
+    const body = await request.json().catch(() => null);
+    const booking = await appointmentRequest(ctx, body, { timeZone: clinic.timeZone });
+    const appointment = await bookAppointment(ctx, booking, clinic.timeZone);
+    const response = fhirResponse(toFhirAppointment(appointment), 201);
+    response.headers.set("location", `${baseUrlOf(request)}/Appointment/${appointment.id}`);
+    return response;
+  });
 }

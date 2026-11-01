@@ -6,13 +6,27 @@ import type {
   Patient as FhirPatient,
   Practitioner as FhirPractitioner,
   Resource,
+  Schedule as FhirSchedule,
+  Slot as FhirSlot,
 } from "fhir/r4";
+import { z } from "zod";
+import type { Context } from "@/context";
 import type { Patient } from "@/patients";
-import type { Practitioner } from "@/practitioners";
-import type { Appointment } from "@/schedule";
+import { displayName, type Practitioner } from "@/practitioners";
+import {
+  APPOINTMENT_STATUSES,
+  BOOKING_MESSAGES,
+  BookingError,
+  freeSlot,
+  getSlot,
+  type Appointment,
+  type AppointmentChange,
+  type Slot,
+} from "@/schedule";
+import { wallClockIn, zonedTimeToUtc } from "@/time";
 
-// Turns clinic records into FHIR R4 resources. The tables already use FHIR's field names and codes,
-// so most of this is renaming.
+// Turns clinic records into FHIR R4 resources, and reads the Appointments clients send. The tables
+// already use FHIR's field names and codes, so most of this is renaming.
 
 /** Identifier system for the clinic's medical record numbers. */
 export const MRN_SYSTEM = "https://example.org/clinic/mrn";
@@ -98,15 +112,186 @@ export function toFhirAppointment(appointment: Appointment): FhirAppointment {
   };
 }
 
+/** Each practitioner has one schedule, and it has the practitioner's ID. */
+export function toFhirSchedule(practitioner: Practitioner): FhirSchedule {
+  return {
+    resourceType: "Schedule",
+    id: practitioner.id,
+    active: true,
+    actor: [{ reference: `Practitioner/${practitioner.id}`, display: displayName(practitioner) }],
+  };
+}
+
+export function toFhirSlot(slot: Slot): FhirSlot {
+  return {
+    resourceType: "Slot",
+    id: slot.id,
+    schedule: { reference: `Schedule/${slot.practitionerId}` },
+    status: slot.status,
+    start: slot.startsAt.toISOString(),
+    end: slot.endsAt.toISOString(),
+  };
+}
+
+/** A resource the server can't read. The message is safe to send back. */
+export class InvalidResourceError extends Error {
+  name = "InvalidResourceError";
+}
+
+const reference = z.strictObject(
+  { reference: z.string(), display: z.string().optional() },
+  "must be a reference",
+);
+const instant = z.iso.datetime({ offset: true, error: "must be a date and time with a time zone" });
+
+// The parts of an Appointment the clinic stores. Anything else is refused rather than dropped,
+// except meta and minutesDuration, which the server works out itself.
+const appointmentResource = z.strictObject({
+  resourceType: z.literal("Appointment", "must be Appointment"),
+  id: z.string().optional(),
+  meta: z.unknown().optional(),
+  status: z.enum(APPOINTMENT_STATUSES, "must be a FHIR appointment status"),
+  start: instant.optional(),
+  end: instant.optional(),
+  minutesDuration: z.unknown().optional(),
+  slot: z.array(reference).length(1, "must name one slot").optional(),
+  reasonCode: z
+    .array(z.strictObject({ text: z.string() }))
+    .max(1, "may have one reason")
+    .optional(),
+  participant: z.array(
+    z.strictObject({
+      actor: reference,
+      status: z.literal("accepted", "must be accepted").optional(),
+    }),
+  ),
+});
+
 /**
- * Wraps search results. `total` must count every match, not just this page, so it is left out
- * when the results filled the page and there may be more.
+ * Reads an Appointment a client sent into the fields the clinic books with. It names one Patient,
+ * and either a slot or a start, an end and a Practitioner. For an update, `id` is the one in the URL.
  */
-export function searchBundle(baseUrl: string, resources: Resource[], limit: number): Bundle {
+export async function appointmentRequest(
+  ctx: Context,
+  body: unknown,
+  options: { timeZone: string; id?: string; now?: Date },
+): Promise<AppointmentChange> {
+  const parsed = appointmentResource.safeParse(body);
+  if (!parsed.success) {
+    const [issue] = parsed.error.issues;
+    const where = issue.path.join(".");
+    if (issue.code === "unrecognized_keys") {
+      const keys = issue.keys.map((key) => (where ? `${where}.${key}` : key));
+      throw new InvalidResourceError(`Not supported: ${keys.join(", ")}`);
+    }
+    throw new InvalidResourceError(
+      where ? `${where} ${issue.message}` : "The body must be a FHIR Appointment in JSON",
+    );
+  }
+  const resource = parsed.data;
+  if (options.id === undefined && resource.status !== "booked") {
+    throw new InvalidResourceError("A new appointment's status must be booked");
+  }
+  if (options.id !== undefined && resource.id !== options.id) {
+    throw new InvalidResourceError("The resource's id must match the URL");
+  }
+
+  const patients: string[] = [];
+  const practitioners: string[] = [];
+  for (const { actor } of resource.participant) {
+    const match = /^(Patient|Practitioner)\/([^/]+)$/.exec(actor.reference);
+    if (!match) {
+      throw new InvalidResourceError("participant can only be a Patient or a Practitioner");
+    }
+    (match[1] === "Patient" ? patients : practitioners).push(match[2]);
+  }
+  if (patients.length !== 1) throw new InvalidResourceError("participant must include one Patient");
+  if (practitioners.length > 1) {
+    throw new InvalidResourceError("participant may include one Practitioner");
+  }
+
+  let practitionerId = practitioners[0];
+  let start = resource.start ? new Date(resource.start) : undefined;
+  let end = resource.end ? new Date(resource.end) : undefined;
+
+  const slotReference = resource.slot?.[0].reference;
+  if (slotReference) {
+    if (!slotReference.startsWith("Slot/")) {
+      throw new InvalidResourceError("slot must be a reference like Slot/{id}");
+    }
+    // An update may name the slot its own appointment holds, so it only needs the slot to exist.
+    // The database still refuses a clash with any other appointment.
+    const slotId = slotReference.slice(5);
+    const slot =
+      options.id === undefined
+        ? await freeSlot(ctx, slotId, options.timeZone, options.now)
+        : await getSlot(ctx, slotId, options.timeZone, options.now);
+    if (!slot) throw new BookingError(BOOKING_MESSAGES.noSlot);
+    if (
+      (practitionerId && practitionerId !== slot.practitionerId) ||
+      (start && start.getTime() !== slot.startsAt.getTime()) ||
+      (end && end.getTime() !== slot.endsAt.getTime())
+    ) {
+      throw new InvalidResourceError("start, end and the Practitioner must match the slot");
+    }
+    ({ practitionerId, startsAt: start, endsAt: end } = slot);
+  }
+
+  if (!start || !end || !practitionerId) {
+    throw new InvalidResourceError(
+      "Send a slot, or a start, an end and a Practitioner participant",
+    );
+  }
+  if (start.getTime() % 60_000 !== 0 || end.getTime() % 60_000 !== 0) {
+    throw new InvalidResourceError("start and end must be on a whole minute");
+  }
+  // The clinic books by wall-clock time. On the night clocks go back, one hour happens twice, so a
+  // start in it can't be told apart from the same time an hour earlier.
+  const { date, time } = wallClockIn(start, options.timeZone);
+  if (zonedTimeToUtc(date, time, options.timeZone).getTime() !== start.getTime()) {
+    throw new InvalidResourceError("start can't fall in the hour that repeats when clocks go back");
+  }
+  return {
+    status: resource.status,
+    patientId: patients[0],
+    practitionerId,
+    date,
+    time,
+    minutes: (end.getTime() - start.getTime()) / 60_000,
+    reason: resource.reasonCode?.[0]?.text,
+  };
+}
+
+/**
+ * Runs a create or update. A resource the server can't read gets a 400, and one the clinic's rules
+ * refuse gets a 422, each with an OperationOutcome that says why.
+ */
+export async function writeResponse(write: () => Promise<Response>): Promise<Response> {
+  try {
+    return await write();
+  } catch (error) {
+    if (error instanceof InvalidResourceError) return badRequest(error.message);
+    if (error instanceof BookingError) {
+      return fhirResponse(operationOutcome("business-rule", error.message), 422);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Wraps search results. `total` must count every match, not just this page. Pass it when the search
+ * knows it; otherwise it is left out when the results filled the page and there may be more.
+ */
+export function searchBundle(
+  baseUrl: string,
+  resources: Resource[],
+  limit: number,
+  total?: number,
+): Bundle {
   return {
     resourceType: "Bundle",
     type: "searchset",
-    total: resources.length < limit ? resources.length : undefined,
+    total: total ?? (resources.length < limit ? resources.length : undefined),
     entry: resources.map((resource) => ({
       fullUrl: `${baseUrl}/${resource.resourceType}/${resource.id}`,
       resource,
@@ -128,6 +313,12 @@ const SEARCH_PARAMS = {
   Appointment: [
     { name: "date", type: "date" },
     { name: "patient", type: "reference" },
+  ],
+  Schedule: [{ name: "actor", type: "reference" }],
+  Slot: [
+    { name: "schedule", type: "reference" },
+    { name: "start", type: "date" },
+    { name: "status", type: "token" },
   ],
 } as const;
 
@@ -153,10 +344,26 @@ export function capabilityStatement(baseUrl: string): CapabilityStatement {
           },
           {
             type: "Appointment",
-            interaction: [{ code: "read" }, { code: "search-type" }],
+            interaction: [
+              { code: "read" },
+              { code: "search-type" },
+              { code: "create" },
+              { code: "update" },
+            ],
+            updateCreate: false,
             searchParam: [...SEARCH_PARAMS.Appointment],
           },
           { type: "Practitioner", interaction: [{ code: "read" }] },
+          {
+            type: "Schedule",
+            interaction: [{ code: "read" }, { code: "search-type" }],
+            searchParam: [...SEARCH_PARAMS.Schedule],
+          },
+          {
+            type: "Slot",
+            interaction: [{ code: "read" }, { code: "search-type" }],
+            searchParam: [...SEARCH_PARAMS.Slot],
+          },
         ],
       },
     ],

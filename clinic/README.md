@@ -65,10 +65,10 @@ npm test
 
 ## FHIR API
 
-Read-only for now, FHIR R4, JSON only. Booking, cancelling and rescheduling through the API come
-next.
+FHIR R4, JSON only. Outside apps can read patients and appointments, find free slots, and book,
+cancel or move appointments.
 
-| Request | Returns |
+| Request | What it does |
 | --- | --- |
 | `GET /fhir/metadata` | What the server supports |
 | `GET /fhir/Patient?name=smith` | Patients whose first or last name starts with each word |
@@ -77,6 +77,11 @@ next.
 | `GET /fhir/Appointment?patient=Patient/{id}` | One patient's appointments |
 | `GET /fhir/Appointment/{id}` | One appointment |
 | `GET /fhir/Practitioner/{id}` | One practitioner |
+| `GET /fhir/Schedule` | Each practitioner's schedule, which has the practitioner's ID |
+| `GET /fhir/Slot?start=2026-11-02&status=free` | Free slots on a day. Add `schedule=Schedule/{id}` for one practitioner. |
+| `GET /fhir/Slot/{id}` | One slot |
+| `POST /fhir/Appointment` | Books an appointment |
+| `PUT /fhir/Appointment/{id}` | Cancels or moves an appointment |
 
 Searches return up to 50 results; use `_count` for up to 100. A search parameter not listed here
 gets a 400 error rather than being ignored, so a typo never returns the wrong patients.
@@ -87,6 +92,27 @@ Behind a proxy, set `FHIR_BASE_URL` on core to the public address.
 ```bash
 curl "http://localhost:3000/fhir/Patient?name=anderson"
 ```
+
+### Book, cancel and move
+
+The clinic sees patients on weekdays in half-hour slots from 8:30 to 5:00, with lunch from noon to
+1:00. To book, send an Appointment with a Patient and either a free slot or a start, an end and a
+Practitioner. The same rules apply as on the booking screen, and a booking the clinic refuses, such
+as a time that's taken, gets a 422 that says why.
+
+```bash
+curl -X POST http://localhost:3000/fhir/Appointment -H "content-type: application/fhir+json" -d '{
+  "resourceType": "Appointment",
+  "status": "booked",
+  "slot": [{ "reference": "Slot/SLOT_ID" }],
+  "participant": [{ "actor": { "reference": "Patient/PATIENT_ID" } }]
+}'
+```
+
+To cancel or move an appointment, read it, change it and `PUT` it back. To cancel, set `status` to
+`cancelled`. To move, change `start` and `end`, and the Practitioner participant for someone else,
+or remove all three and send a `slot`. Fields the clinic doesn't store, such as `comment`, get a 400
+rather than being dropped. Every booking and change goes in the audit log.
 
 ## Mock payer
 
@@ -121,8 +147,7 @@ services:
 ## Not built yet
 
 - Sign-in. Every screen acts as one demo user, and the FHIR API is open.
-- Booking, cancelling and rescheduling through the FHIR API, and finding patients by birth date,
-  phone or record number
+- Finding patients through the FHIR API by birth date, phone or record number
 - Cancelling, rescheduling and checking in appointments on the screens
 - New-patient intake
 - Calling the payer from the front desk to check eligibility

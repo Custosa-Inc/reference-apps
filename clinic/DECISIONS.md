@@ -54,3 +54,9 @@ Buyers of health software ask vendors how they protect health data under HIPAA, 
 get to see HIPAA's safeguards in working code. So the clinic tracks those safeguards in
 [HIPAA.md](HIPAA.md) and builds toward them in the open. Outside products, compliance tools included,
 connect through the plug-in point rather than being built into the app.
+
+## 10. Slots follow from the clinic's hours (2026-11-01)
+
+The clinic has one set of hours for everyone, so `schedule/` works out each slot from those hours and
+the appointments already booked, rather than storing slots. Each practitioner has one FHIR Schedule,
+with the practitioner's ID. Hours that differ by practitioner, or time off, would need a table.
