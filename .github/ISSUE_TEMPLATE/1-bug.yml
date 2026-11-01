@@ -1,0 +1,36 @@
+name: Bug
+description: Something in an app, its tests or its setup is broken.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: All data here is synthetic. Never paste real patient data, keys or tokens.
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: The commit you ran, from `git rev-parse --short HEAD`.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The exact commands from a fresh clone. Paste logs as text, not screenshots.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: What you expected and what happened
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched open and closed issues.
+          required: true
+        - label: If an AI tool helped write this, I checked every claim myself.
+          required: true

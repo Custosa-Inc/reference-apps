@@ -44,7 +44,8 @@ app's README explains how.
 ## Contributing
 
 Pick an issue, close a gap in an app's compliance page, fix something that doesn't match how the real
-systems work, or propose a new app. Read [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
+systems work, or propose a new app. Read [CONTRIBUTING.md](CONTRIBUTING.md) to get started, and ask
+questions in [Discussions](https://github.com/Custosa-Inc/reference-apps/discussions).
 
 ## Who maintains this
 

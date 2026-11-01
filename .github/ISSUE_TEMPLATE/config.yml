@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/Custosa-Inc/reference-apps/discussions/new?category=q-a
+    about: Running the apps, and FHIR, X12 or HIPAA as they're used here.
+  - name: Propose an app, service or change
+    url: https://github.com/Custosa-Inc/reference-apps/discussions/new?category=ideas
+    about: Ideas start in Discussions. Ideas that fit become issues.
+  - name: Report a security problem
+    url: https://github.com/Custosa-Inc/reference-apps/security/advisories/new
+    about: Report privately. Gaps already listed in an app's compliance page can be discussed in the open.

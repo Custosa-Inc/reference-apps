@@ -5,8 +5,11 @@ Thanks for helping. You can:
 - work on an open issue
 - close a gap in an app's compliance page, such as the clinic's [HIPAA.md](clinic/HIPAA.md)
 - report something that doesn't match how the real systems or standards work
-- propose a new app or a new service for an existing app (open an issue first so we can agree on
-  scope)
+- propose a new app or a new service for an existing app (start a thread in
+  [Ideas](https://github.com/Custosa-Inc/reference-apps/discussions/categories/ideas) first so we
+  can agree on scope)
+
+Ask questions in [Q&A](https://github.com/Custosa-Inc/reference-apps/discussions/categories/q-a).
 
 ## Picking an issue
 
@@ -83,7 +86,8 @@ it.
 
 Each app is a folder at the root of the repo with its own README, ARCHITECTURE.md, DECISIONS.md,
 `compose.yaml`, tests and CI workflow in `.github/workflows/`, plus a page for each rule its
-industry is held to, like the clinic's HIPAA.md. Open an issue to discuss a new app before you start.
+industry is held to, like the clinic's HIPAA.md. Start a thread in Ideas to discuss a new app before
+you start.
 
 ## Code of conduct
 

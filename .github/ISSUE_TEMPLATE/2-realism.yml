@@ -1,0 +1,45 @@
+name: Realism or standards error
+description: An app, its data or its docs don't match a standard or how the real systems work.
+labels: ["realism", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Corrections from people who know the real systems are some of the most useful issues we get.
+        Cite paid guides, such as the X12 implementation guides, by section. Don't paste their text.
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - App behavior
+        - Seed data
+        - FHIR API
+        - X12 messages
+        - HIPAA.md or other docs
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What's wrong, and what happens in practice?
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: A spec section, implementation guide, regulation or your own work experience.
+      placeholder: FHIR R4 Appointment.status, 45 CFR 164.312(b)
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched open and closed issues.
+          required: true
+        - label: If an AI tool helped write this, I checked every claim myself.
+          required: true

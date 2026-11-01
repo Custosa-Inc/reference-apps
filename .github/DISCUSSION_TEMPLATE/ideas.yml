@@ -1,0 +1,33 @@
+labels: ["triage"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Product pitches get closed. To run your product against an app, use the app's plug-in point,
+        described in its README.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should change, and why?
+      description: The real workflow or rule behind it, and who would use it.
+    validations:
+      required: true
+  - type: input
+    id: standard
+    attributes:
+      label: Standard or rule involved
+      placeholder: FHIR Slot, X12 278, 45 CFR 164.312(b)
+  - type: textarea
+    id: done
+    attributes:
+      label: How would we know it's done?
+      description: What a test would check.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: It needs only synthetic data, and no licensed code sets or paid standards text.
+          required: true
+        - label: I searched existing issues and ideas.
+          required: true

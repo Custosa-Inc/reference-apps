@@ -1,7 +1,8 @@
 # Decisions
 
-Choices that shape the clinic app, newest last. To change one, open an issue that explains why. If
-it's accepted, add a new entry rather than editing the old one.
+Choices that shape the clinic app, newest last. To change one, explain why in a thread in
+[Ideas](https://github.com/Custosa-Inc/reference-apps/discussions/categories/ideas). If it's
+accepted, add a new entry rather than editing the old one.
 
 ## 1. Written from scratch (2026-11-01)
 

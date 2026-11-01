@@ -1,0 +1,12 @@
+labels: ["triage"]
+body:
+  - type: markdown
+    attributes:
+      value: All data here is synthetic. Never paste real patient data, keys or tokens. Bugs go to issues.
+  - type: textarea
+    id: question
+    attributes:
+      label: What are you trying to do, and what happened?
+      description: The commands you ran, your OS and Docker version, and logs as text.
+    validations:
+      required: true
