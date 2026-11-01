@@ -188,11 +188,18 @@ describe("FHIR requests", () => {
     });
   });
 
+  const post = (contentType: string | null, body = '{"resourceType":"Appointment"}') =>
+    new Request("http://localhost/fhir/Appointment", {
+      method: "POST",
+      headers: contentType ? { "content-type": contentType } : {},
+      body,
+    });
+
   it("answers 400 to a resource it can't read and 422 to one the clinic refuses", async () => {
-    const unreadable = await writeResponse(async () => {
+    const unreadable = await writeResponse(post("application/fhir+json"), async () => {
       throw new InvalidResourceError("Expected an Appointment");
     });
-    const refused = await writeResponse(async () => {
+    const refused = await writeResponse(post("application/fhir+json"), async () => {
       throw new BookingError("That slot isn't free.");
     });
     expect(unreadable.status).toBe(400);
@@ -200,6 +207,25 @@ describe("FHIR requests", () => {
     expect(await refused.json()).toMatchObject({
       issue: [{ code: "business-rule", diagnostics: "That slot isn't free." }],
     });
+  });
+
+  it("reads FHIR JSON and plain JSON bodies", async () => {
+    for (const type of ["application/fhir+json; charset=utf-8", "application/json"]) {
+      const response = await writeResponse(post(type), async (body) => Response.json(body));
+      expect(await response.json()).toEqual({ resourceType: "Appointment" });
+    }
+  });
+
+  it("refuses bodies that aren't JSON, which web pages on other sites could send", async () => {
+    for (const type of ["text/plain", "application/x-www-form-urlencoded", null]) {
+      let wrote = false;
+      const response = await writeResponse(post(type), async () => {
+        wrote = true;
+        return new Response();
+      });
+      expect(response.status).toBe(415);
+      expect(wrote).toBe(false);
+    }
   });
 });
 

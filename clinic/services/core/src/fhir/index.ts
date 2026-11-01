@@ -262,13 +262,27 @@ export async function appointmentRequest(
   };
 }
 
+const JSON_TYPES = ["application/fhir+json", "application/json"];
+
 /**
- * Runs a create or update. A resource the server can't read gets a 400, and one the clinic's rules
- * refuse gets a 422, each with an OperationOutcome that says why.
+ * Reads the resource a client sent and runs a create or update with it. Only JSON bodies are read.
+ * A browser checks with the server before sending JSON to another site, and this server never
+ * agrees, so a web page on another site can't use a visitor's browser to write to the clinic. A
+ * resource the server can't read gets a 400, and one the clinic's rules refuse gets a 422, each with
+ * an OperationOutcome that says why.
  */
-export async function writeResponse(write: () => Promise<Response>): Promise<Response> {
+export async function writeResponse(
+  request: Request,
+  write: (body: unknown) => Promise<Response>,
+): Promise<Response> {
+  const type = request.headers.get("content-type")?.split(";")[0].trim().toLowerCase();
+  if (!type || !JSON_TYPES.includes(type)) {
+    const outcome = operationOutcome("not-supported", "Send the resource as application/fhir+json");
+    return fhirResponse(outcome, 415);
+  }
+  const body = await request.json().catch(() => null);
   try {
-    return await write();
+    return await write(body);
   } catch (error) {
     if (error instanceof InvalidResourceError) return badRequest(error.message);
     if (error instanceof BookingError) {
