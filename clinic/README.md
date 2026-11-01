@@ -5,6 +5,11 @@ search for patients and book appointments. Every read and change of patient data
 log. Outside apps read clinic data through a FHIR R4 API, and a mock insurer answers X12 270/271
 eligibility checks.
 
+The clinic is built around HIPAA. [HIPAA.md](HIPAA.md) lists each technical safeguard, what the
+clinic does about it today and what's still missing.
+
+![The front desk schedule](front-desk.png)
+
 ## Run it
 
 ```bash
@@ -29,6 +34,14 @@ appointments starting today. Weekends are empty, like a real clinic. To start ov
 docker compose down --volumes
 ```
 
+## See the audit log
+
+There's no screen for it yet. With the app running:
+
+```bash
+docker compose exec db psql -U clinic -d core -c "SELECT recorded_at, actor_name, source, action, entity_type, patient_id FROM audit_events ORDER BY recorded_at DESC LIMIT 10"
+```
+
 ## Work on core without Docker
 
 ```bash
@@ -48,7 +61,7 @@ npm test
 ## How it's built
 
 [ARCHITECTURE.md](ARCHITECTURE.md) explains the services and the rules that keep the code modular.
-[DECISIONS.md](DECISIONS.md) records why.
+[DECISIONS.md](DECISIONS.md) records why. [HIPAA.md](HIPAA.md) tracks the HIPAA safeguards.
 
 ## FHIR API
 
@@ -112,4 +125,5 @@ services:
 - Calling the payer from the front desk to check eligibility
 - Fax, phone, lab and pharmacy services
 
-These are open issues. Never put real patient data in this app.
+These are open issues, and [HIPAA.md](HIPAA.md) lists the HIPAA safeguards still missing. Never put
+real patient data in this app.

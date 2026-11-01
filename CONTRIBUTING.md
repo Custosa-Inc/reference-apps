@@ -3,6 +3,7 @@
 Thanks for helping. You can:
 
 - work on an open issue
+- close a gap in an app's compliance page, such as the clinic's [HIPAA.md](clinic/HIPAA.md)
 - report something that doesn't match how the real systems or standards work
 - propose a new app or a new service for an existing app (open an issue first so we can agree on
   scope)
@@ -68,11 +69,21 @@ it.
   example.com.
 - Don't add licensed code sets such as CPT or CDT, or text copied from paid standards documents.
 
+## Compliance and vendors
+
+- Describe what the code does. Don't claim an app is compliant with anything, since no software is
+  compliant on its own.
+- If your change affects a safeguard, update the app's compliance page, such as `clinic/HIPAA.md`, in
+  the same pull request.
+- The apps don't depend on or favor any vendor's product. Connect a product through the app's plug-in
+  point instead of changing the app to fit it. Pull requests that tie an app to one vendor won't be
+  merged.
+
 ## Adding an app
 
 Each app is a folder at the root of the repo with its own README, ARCHITECTURE.md, DECISIONS.md,
-`compose.yaml`, tests and CI workflow in `.github/workflows/`. Open an issue to discuss a new app
-before you start.
+`compose.yaml`, tests and CI workflow in `.github/workflows/`, plus a page for each rule its
+industry is held to, like the clinic's HIPAA.md. Open an issue to discuss a new app before you start.
 
 ## Reporting a security problem
 
