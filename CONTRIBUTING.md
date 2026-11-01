@@ -85,6 +85,10 @@ Each app is a folder at the root of the repo with its own README, ARCHITECTURE.m
 `compose.yaml`, tests and CI workflow in `.github/workflows/`, plus a page for each rule its
 industry is held to, like the clinic's HIPAA.md. Open an issue to discuss a new app before you start.
 
+## Code of conduct
+
+Everyone who takes part follows our [code of conduct](CODE_OF_CONDUCT.md).
+
 ## Reporting a security problem
 
 See [SECURITY.md](SECURITY.md).
