@@ -17,8 +17,31 @@ is the contract.
 Fax, phone, lab and pharmacy services will join under `services/` as they are built. Each one will use
 the standard its real counterpart uses.
 
-All services share one Postgres server, and each service gets its own database on it. A service never
-reads another service's database.
+Services that need persistent storage share one Postgres server, with a separate database for each
+service. A service never reads another service's database.
+
+## Service map
+
+```mermaid
+flowchart LR
+    desk["Front desk<br/>Browser"]
+    outside["Outside apps<br/>Products connected to the clinic"]
+    caller["Eligibility client<br/>For example, curl"]
+    core["core<br/>Clinic practice system<br/>Next.js :3000"]
+    payer["payer<br/>Mock insurance company<br/>HTTP :8080"]
+    db[("db<br/>Postgres server<br/>core database")]
+
+    desk -->|"HTTP - front desk pages"| core
+    outside -->|"FHIR R4 JSON over HTTP<br/>/fhir"| core
+    caller -->|"X12 270 request over HTTP<br/>POST /x12/270"| payer
+    payer -->|"X12 271 response<br/>application/edi-x12"| caller
+    core -->|"Postgres protocol<br/>db:5432/core"| db
+```
+
+This shows the services in [compose.yaml](compose.yaml). The front desk and FHIR API are two
+interfaces of the same `core` service. The `payer` service is currently stateless and does not use
+Postgres. Checking eligibility from the front desk is not built yet, so there is no `core`-to-`payer`
+connection in this map. Fax, phone, lab and pharmacy services are also not built yet.
 
 ## Inside core
 
