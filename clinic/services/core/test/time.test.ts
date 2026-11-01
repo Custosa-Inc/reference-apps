@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, isIsoDate, todayIn, zonedTimeToUtc } from "@/time";
+import { addDays, isIsoDate, todayIn, wallClockIn, zonedTimeToUtc } from "@/time";
 
 describe("time", () => {
   it("converts clinic wall-clock times to UTC on both sides of a DST change", () => {
@@ -15,6 +15,14 @@ describe("time", () => {
   it("finds today's date in the clinic's time zone", () => {
     const lateEvening = new Date("2026-11-03T04:30:00Z"); // 10:30 PM on November 2 in Chicago
     expect(todayIn("America/Chicago", lateEvening)).toBe("2026-11-02");
+  });
+
+  it("reads an instant as the clinic's wall-clock date and time", () => {
+    const lateEvening = new Date("2026-11-03T04:30:00Z");
+    expect(wallClockIn(lateEvening, "America/Chicago")).toEqual({
+      date: "2026-11-02",
+      time: "22:30",
+    });
   });
 
   it("adds days across month ends", () => {

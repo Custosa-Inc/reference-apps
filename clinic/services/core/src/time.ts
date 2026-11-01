@@ -49,10 +49,19 @@ export function zonedTimeToUtc(date: string, time: string, timeZone: string): Da
   return new Date(wall - offsetMs(new Date(guess), timeZone));
 }
 
+/** The wall-clock date and time of an instant in a time zone. Seconds are dropped. */
+export function wallClockIn(instant: Date, timeZone: string): { date: string; time: string } {
+  const p = partsIn(instant, timeZone);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return {
+    date: `${p.year}-${pad(p.month)}-${pad(p.day)}`,
+    time: `${pad(p.hour)}:${pad(p.minute)}`,
+  };
+}
+
 /** Today's date on the clinic's wall clock. */
 export function todayIn(timeZone: string, now: Date = new Date()): string {
-  const p = partsIn(now, timeZone);
-  return `${p.year}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
+  return wallClockIn(now, timeZone).date;
 }
 
 export function addDays(date: string, days: number): string {

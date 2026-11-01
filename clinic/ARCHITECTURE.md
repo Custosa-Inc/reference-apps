@@ -54,7 +54,7 @@ src/
 ├── practitioners/  the doctors and nurse practitioners who see patients
 ├── schedule/       appointments
 ├── audit/          the log of who read or changed patient data
-├── fhir/           turns records into FHIR resources for the API
+├── fhir/           turns records into FHIR resources, and reads the ones clients send
 ├── session/        who is using the app (a fixed demo user for now)
 ├── db/             database connection, migrations and seed data
 ├── config.ts       clinic name and time zone
@@ -87,8 +87,10 @@ enum types, so the database refuses any value outside the list.
 - Core uses Postgres when `DATABASE_URL` is set, and PGlite otherwise (decision 6).
 - A practitioner can't be double-booked. The database enforces it with an exclusion constraint
   (`drizzle/0001_no_double_booking.sql`), which also holds when two bookings race.
+- Slots aren't stored. `schedule/` works them out from the clinic's hours (`SLOT_TIMES`) and the
+  appointments already booked (decision 10).
 
 ## Plugging in
 
-Outside products read clinic data through the FHIR API at `/fhir`. To run your own service next to the
-clinic, see the README.
+Outside products read clinic data and book appointments through the FHIR API at `/fhir`. To run
+your own service next to the clinic, see the README.

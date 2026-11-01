@@ -1,7 +1,7 @@
 import { inTransaction, type Actor, type Context } from "@/context";
 import { createPatient, type NewPatient, type Patient } from "@/patients";
 import { createPractitioner, listPractitioners, type NewPractitioner } from "@/practitioners";
-import { bookAppointment } from "@/schedule";
+import { bookAppointment, SLOT_TIMES } from "@/schedule";
 import { addDays, dayOfWeek, todayIn } from "@/time";
 import type { Db } from "./client";
 
@@ -48,11 +48,6 @@ const REASONS = [
   "Vaccination",
   "Lab results review",
 ];
-
-// Half-hour slots on weekdays, with a lunch break.
-const SLOTS = words(`
-  08:30 09:00 09:30 10:00 10:30 11:00 11:30 13:00 13:30 14:00 14:30 15:00 15:30 16:00 16:30
-`);
 
 const PRACTITIONERS: (NewPractitioner & { seesChildren: boolean })[] = [
   {
@@ -149,7 +144,7 @@ async function seed(ctx: Context, timeZone: string) {
     for (const { seesChildren, record } of practitioners) {
       const pool = seesChildren ? children : adults;
       if (pool.length === 0) continue;
-      for (const time of SLOTS) {
+      for (const time of SLOT_TIMES) {
         if (random.next() > 0.6) continue;
         await bookAppointment(
           ctx,

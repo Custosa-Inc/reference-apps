@@ -39,7 +39,7 @@ app's README explains how.
 
 | App | What it shows | Rules | Status |
 | --- | --- | --- | --- |
-| [clinic](clinic) | An outpatient clinic's front desk: patient search, appointment booking, an audit log of who saw which patient, a read-only FHIR R4 API and a mock insurer that answers X12 eligibility checks | [HIPAA](clinic/HIPAA.md) | Early |
+| [clinic](clinic) | An outpatient clinic's front desk: patient search, appointment booking, an audit log of who saw which patient, a FHIR R4 API that can book, cancel and move appointments, and a mock insurer that answers X12 eligibility checks | [HIPAA](clinic/HIPAA.md) | Early |
 
 ## Contributing
 
