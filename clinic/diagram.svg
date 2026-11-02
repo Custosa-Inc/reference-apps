@@ -1,0 +1,48 @@
+<!-- Source for diagram.png, which the main README shows. After editing, export the PNG again at 2x. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" width="860" height="380" role="img" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>What docker compose up starts, and where your product connects</title>
+  <defs>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#FF7A2F"/></marker>
+    <marker id="arrow-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a8a8a"/></marker>
+  </defs>
+  <rect width="860" height="380" rx="10" fill="#000"/>
+
+  <!-- Your product -->
+  <rect x="24" y="128" width="200" height="124" rx="10" fill="none" stroke="#FF7A2F" stroke-width="2" stroke-dasharray="7 6"/>
+  <text x="124" y="172" fill="#fff" font-size="18" font-weight="600" text-anchor="middle">Your product</text>
+  <text x="124" y="198" fill="#9c9c9c" font-size="13" text-anchor="middle">a scheduling or voice agent,</text>
+  <text x="124" y="216" fill="#9c9c9c" font-size="13" text-anchor="middle">a security or compliance tool</text>
+
+  <!-- What docker compose up starts -->
+  <rect x="284" y="24" width="552" height="332" rx="12" fill="none" stroke="#3a3a3a" stroke-dasharray="4 5"/>
+  <text x="304" y="50" fill="#8a8a8a" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">docker compose up</text>
+
+  <rect x="312" y="68" width="300" height="158" rx="8" fill="#0d0d0d" stroke="#bdbdbd"/>
+  <text x="328" y="94" fill="#fff" font-size="15" font-weight="600">Clinic practice system</text>
+  <text x="596" y="94" fill="#8a8a8a" font-size="12" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">:3000</text>
+  <rect x="328" y="108" width="268" height="30" rx="5" fill="#1a1a1a"/>
+  <text x="340" y="128" fill="#e6e6e6" font-size="13">Front desk screens</text>
+  <rect x="328" y="146" width="268" height="30" rx="5" fill="#1a1a1a"/>
+  <text x="340" y="166" fill="#e6e6e6" font-size="13">FHIR R4 API</text>
+  <text x="584" y="166" fill="#8a8a8a" font-size="12" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">/fhir</text>
+  <rect x="328" y="184" width="268" height="30" rx="5" fill="#1a1a1a"/>
+  <text x="340" y="204" fill="#e6e6e6" font-size="13">Audit log of every read and change</text>
+
+  <rect x="648" y="68" width="168" height="158" rx="8" fill="#0d0d0d" stroke="#bdbdbd"/>
+  <text x="664" y="94" fill="#fff" font-size="15" font-weight="600">Postgres</text>
+  <text x="664" y="128" fill="#9c9c9c" font-size="13">60 synthetic patients</text>
+  <text x="664" y="150" fill="#9c9c9c" font-size="13">4 practitioners</text>
+  <text x="664" y="172" fill="#9c9c9c" font-size="13">2 weeks of visits</text>
+  <line x1="612" y1="147" x2="646" y2="147" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#arrow-grey)"/>
+
+  <rect x="312" y="254" width="300" height="80" rx="8" fill="#0d0d0d" stroke="#bdbdbd"/>
+  <text x="328" y="282" fill="#fff" font-size="15" font-weight="600">Mock insurer</text>
+  <text x="596" y="282" fill="#8a8a8a" font-size="12" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">:8080</text>
+  <text x="328" y="310" fill="#9c9c9c" font-size="13">Answers X12 270/271 eligibility checks</text>
+
+  <!-- Your product's connections -->
+  <line x1="226" y1="161" x2="326" y2="161" stroke="#FF7A2F" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <text x="255" y="152" fill="#FF7A2F" font-size="11" text-anchor="middle">FHIR R4</text>
+  <path d="M226 228 L256 228 L256 294 L310 294" fill="none" stroke="#FF7A2F" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <text x="270" y="286" fill="#FF7A2F" font-size="11" text-anchor="middle">X12</text>
+</svg>

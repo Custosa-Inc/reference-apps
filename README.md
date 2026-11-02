@@ -10,19 +10,19 @@ outpatient clinic. All data is synthetic.
 [Good first issues](https://github.com/Custosa-Inc/reference-apps/contribute) ·
 [Discussions](https://github.com/Custosa-Inc/reference-apps/discussions)
 
+![What docker compose up starts: the clinic practice system with front desk screens, a FHIR R4 API at /fhir and an audit log of every read and change; Postgres with 60 synthetic patients, 4 practitioners and two weeks of visits; and a mock insurer that answers X12 270/271 eligibility checks. Your product connects over FHIR R4 and X12.](clinic/diagram.png)
+
 ![The clinic's front desk schedule](clinic/front-desk.png)
+
+| You want to | Start here |
+| --- | --- |
+| Test an agent or app against a clinic's FHIR API | [FHIR API](clinic/README.md#fhir-api) |
+| Test a security or compliance tool against patient records | [HIPAA.md](clinic/HIPAA.md) |
+| Learn FHIR R4 and X12 by running them | [Try it](#try-it) |
+| Help build it | [Good first issues](https://github.com/Custosa-Inc/reference-apps/contribute) |
 
 Each app is shaped like the systems the industry really runs on, speaks the standards those systems
 use, and shows the rules the industry is held to, such as HIPAA, in working code.
-
-Use them to:
-
-- test a product, such as a scheduling or voice agent, against something shaped like the real thing,
-  with data you control, can reset and can run offline
-- see what a rule like HIPAA asks of code, and test a compliance or security tool against an app that
-  holds sensitive records
-- learn the standards an industry runs on by reading and running working code
-- build on: every app is Apache-2.0, and each one has a place to plug your own service in
 
 The apps show what rules ask of code. Running them doesn't make anyone compliant, and nothing here is
 legal advice.
