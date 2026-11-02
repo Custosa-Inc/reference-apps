@@ -1,8 +1,19 @@
 # Reference Apps
 
-Runnable mock apps for regulated industries, starting with an outpatient clinic. Each app is shaped
-like the systems the industry really runs on, speaks the standards those systems use, and shows the
-rules the industry is held to, such as HIPAA, in working code. All data is synthetic.
+[![clinic](https://github.com/Custosa-Inc/reference-apps/actions/workflows/clinic.yml/badge.svg)](https://github.com/Custosa-Inc/reference-apps/actions/workflows/clinic.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+
+Mock apps for regulated industries that anyone can run, build on and improve, starting with an
+outpatient clinic. All data is synthetic.
+
+[Try it](#try-it) · [HIPAA.md](clinic/HIPAA.md) ·
+[Good first issues](https://github.com/Custosa-Inc/reference-apps/contribute) ·
+[Discussions](https://github.com/Custosa-Inc/reference-apps/discussions)
+
+![The clinic's front desk schedule](clinic/front-desk.png)
+
+Each app is shaped like the systems the industry really runs on, speaks the standards those systems
+use, and shows the rules the industry is held to, such as HIPAA, in working code.
 
 Use them to:
 
@@ -29,8 +40,6 @@ docker compose up --build
 ```
 
 Then open http://localhost:3000.
-
-![The clinic's front desk schedule](clinic/front-desk.png)
 
 To work on a single service without Docker, you need [Node.js 22](https://nodejs.org/) or later. Each
 app's README explains how.
