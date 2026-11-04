@@ -323,7 +323,10 @@ export function operationOutcome(
 
 // The search parameters each resource supports. The routes and the CapabilityStatement share it.
 const SEARCH_PARAMS = {
-  Patient: [{ name: "name", type: "string" }],
+  Patient: [
+    { name: "name", type: "string" },
+    { name: "telecom", type: "token" },
+  ],
   Appointment: [
     { name: "date", type: "date" },
     { name: "patient", type: "reference" },

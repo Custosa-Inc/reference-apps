@@ -10,17 +10,33 @@ let ctx: Context;
 
 beforeAll(async () => {
   ctx = await createTestContext();
-  for (const [givenName, familyName] of [
-    ["Jordan", "Smith"],
-    ["Maria", "Smithers"],
-    ["Wei", "Chen"],
-    ["Ana", "100%_Real"],
-  ]) {
-    await createPatient(ctx, { givenName, familyName, birthDate: "1990-05-05", gender: "unknown" });
+
+  const testPatients = [
+    { givenName: "Jordan", familyName: "Smith", phone: "217-555-0142" },
+    { givenName: "Maria", familyName: "Smithers", phone: "312-555-0101" },
+    { givenName: "Wei", familyName: "Chen" },
+    { givenName: "Ana", familyName: "100%_Real" },
+  ];
+
+  for (const patient of testPatients) {
+    await createPatient(ctx, {
+      ...patient,
+      birthDate: "1990-05-05",
+      gender: "unknown",
+    });
   }
 });
 
 describe("patients", () => {
+  it("finds patients by phone number regardless of formatting", async () => {
+    const exact = await searchPatients(ctx, { phone: "2175550142" });
+    const formatted = await searchPatients(ctx, { phone: "217-555-0142" });
+    const invalid = await searchPatients(ctx, { phone: "---" });
+
+    expect(exact.map((p) => p.givenName)).toEqual(["Jordan"]);
+    expect(formatted.map((p) => p.givenName)).toEqual(["Jordan"]);
+    expect(invalid).toEqual([]);
+  });
   it("gives each new patient a medical record number", async () => {
     const [first, second] = await searchPatients(ctx, { name: "smith" });
     expect(first.mrn).toMatch(/^\d{6}$/);

@@ -174,6 +174,7 @@ describe("FHIR requests", () => {
       issue: [{ code: "not-supported", diagnostics: expect.stringContaining("identifier") }],
     });
     expect(rejectUnsupported(new URLSearchParams("name=doe&_count=5"), "Patient")).toBeNull();
+    expect(rejectUnsupported(new URLSearchParams("telecom=2175550142"), "Patient")).toBeNull();
   });
 
   it("lists booking, slots and schedules in the CapabilityStatement", () => {
@@ -181,11 +182,21 @@ describe("FHIR requests", () => {
     const interactions = Object.fromEntries(
       resources.map((r) => [r.type, r.interaction!.map((i) => i.code)]),
     );
+
     expect(interactions).toMatchObject({
       Appointment: ["read", "search-type", "create", "update"],
       Schedule: ["read", "search-type"],
       Slot: ["read", "search-type"],
     });
+
+    const patientResource = resources.find((resource) => resource.type === "Patient");
+
+    expect(patientResource?.searchParam).toContainEqual(
+      expect.objectContaining({
+        name: "telecom",
+        type: "token",
+      }),
+    );
   });
 
   const post = (contentType: string | null, body = '{"resourceType":"Appointment"}') =>

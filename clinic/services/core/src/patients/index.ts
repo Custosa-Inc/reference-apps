@@ -1,4 +1,4 @@
-import { and, asc, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, asc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { recordAudit, type AuditEntry } from "@/audit";
 import { inTransaction, type Context } from "@/context";
@@ -52,9 +52,11 @@ function escapeLike(term: string): string {
  */
 export async function searchPatients(
   ctx: Context,
-  query: { name?: string; limit?: number },
+  query: { name?: string; phone?: string; limit?: number },
 ): Promise<Patient[]> {
   const terms = (query.name ?? "").trim().split(/\s+/).filter(Boolean);
+  const phone = query.phone?.replace(/\D/g, "");
+  if (query.phone !== undefined && phone === "") return [];
   const where = and(
     ...terms.map((term) =>
       or(
@@ -62,6 +64,9 @@ export async function searchPatients(
         ilike(patients.familyName, `${escapeLike(term)}%`),
       ),
     ),
+    ...(phone !== undefined
+      ? [sql`regexp_replace(${patients.phone}, '[^0-9]', '', 'g') = ${phone}`]
+      : []),
   );
   return inTransaction(ctx, async (tx) => {
     const rows = await tx.db
