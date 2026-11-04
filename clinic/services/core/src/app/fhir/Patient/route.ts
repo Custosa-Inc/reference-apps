@@ -18,6 +18,7 @@ export async function GET(request: Request) {
   const limit = countParam(params);
   const patients = await searchPatients(fhirContext(), {
     name: params.get("name") ?? undefined,
+    phone: params.get("telecom") ?? undefined,
     limit,
   });
   return fhirResponse(searchBundle(baseUrlOf(request), patients.map(toFhirPatient), limit));
